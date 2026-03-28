@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>FILEHEADER</key>
+	<string>
+//  +---------------------------------------------------------+
+//  | Copyright (c) ___YEAR___ Axel H. Karlsson and contributors.   |
+//  |                                                         |
+//  | This file is licenced under the BSD 3-clause licence;   |
+//  | see the LICENSE file in the project&apos;s source directory. |
+//  +---------------------------------------------------------+
+//
+//  ___FILENAME___
+//  ___PROJECTNAME___
+//
+//  Created by ___FULLUSERNAME___ on ___DATE___.
+//</string>
+</dict>
+</plist>

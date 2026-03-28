@@ -1,0 +1,21 @@
+# Based on: https://github.com/github/gitignore/blob/main/Swift.gitignore
+
+DerivedData/
+*.xcuserstate
+xcuserdata/
+
+Config.xcconfig
+
+*.hmap
+
+*.ipa
+*.dSYM.zip
+*.dSYM
+
+timeline.xctimeline
+playground.xcworkspace
+
+.build/
+
+# We do not use CocoaPods.
+Pods/
