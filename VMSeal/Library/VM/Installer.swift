@@ -12,23 +12,70 @@
 //  Created by Developer on 2026-03-26.
 //
 
+import SwiftUI
+
 extension VM {
-    struct Installer {
-        static func install(
+    @Observable
+    class Installer {
+        
+        enum Status: String {
+            case DOWNLOADING_IMAGE = "Downloading ISO image..."
+            case VERIFYING_IMAGE = "Verifying checksum..."
+            case CONFIGURING_VM = "Configuring new VM..."
+        }
+        
+        var active: Bool = false
+        var status: Status? = nil
+        var progress: Double = -1
+        
+        private func download(_ guest: VM.Guest) async throws -> Path {
+            let iso = guest.image
+            
+            if iso.exists() {
+                try iso.remove()
+            }
+            
+            try await fetch(
+                from: guest.url,
+                saveTo: iso,
+                didProgress: { progress in
+                    self.progress = progress.fractionCompleted
+                }
+            )
+            
+            return iso
+        }
+
+        private func verify(_ guest: VM.Guest) async throws -> Bool {
+            let checksum = try guest.image.checksum(
+                binary: true
+            )
+            
+            return guest.sha256sum.matches(checksum)
+        }
+        
+        func install(
             name: String,
             specs: VM.Configuration,
-            supervisor: Supervisor
+            supervisor: Supervisor,
         ) async throws -> Void {
+            self.active = true
+            self.progress = -1
+            
             let os = specs.os
             
             let downloaded: Path = os.image
             
             // Only downloads if needed.
             if !downloaded.exists() {
+                self.status = .DOWNLOADING_IMAGE
                 let _ = try await download(os)
             }
             
-            let verified = (try? verify(os)) ?? false
+            self.status = .VERIFYING_IMAGE
+            
+            // TODO: Make this async
+            let verified = try await self.verify(os)
             
             if !verified {
                 throw UserFacingError(
@@ -36,6 +83,8 @@ extension VM {
                         "VMSeal failed to verify the ISO downloaded was legitimate!\nConsider opening an issue if the error persists."
                 )
             }
+            
+            self.status = .CONFIGURING_VM
             
             let vm = try VM(
                 name: name,
@@ -54,6 +103,8 @@ extension VM {
             try vm.configure()
             
             supervisor.add(vm)
+            
+            self.active = false
         }
     }
 }

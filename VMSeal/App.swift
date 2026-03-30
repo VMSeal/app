@@ -26,6 +26,8 @@ struct VMSeal: App {
     @State private var usingModal = false
     @State private var error = VMSeal.Error()
     
+    @State private var installer: VM.Installer = VM.Installer()
+    
     init() {
         self.supervisor.restore()
     }
@@ -43,7 +45,8 @@ struct VMSeal: App {
                         
                         Task {
                             do {
-                                try await VM.Installer.install(
+                                hideModal()
+                                try await self.installer.install(
                                     name: name,
                                     specs: specs,
                                     supervisor: supervisor
@@ -53,6 +56,20 @@ struct VMSeal: App {
                             }
                         }
                     }
+                }
+                .sheet(isPresented: $installer.active) {
+                    VStack {
+                        if installer.progress >= 0 {
+                            ProgressView(value: installer.progress)
+                            Text(installer.status?.rawValue ?? "Working on it...")
+                        } else {
+                            ProgressView()
+                            Text("Please be patient, this may take a while...")
+                        }
+                    }
+                    .padding(10)
+                    
+                    
                 }
                 .alert(error.message, isPresented: $error.occurred) {
                     Button("OK") {

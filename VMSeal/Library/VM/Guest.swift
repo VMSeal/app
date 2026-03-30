@@ -64,26 +64,3 @@ extension VM {
         }
     }
 }
-
-func download(_ guest: VM.Guest) async throws -> Path {
-    let iso = guest.image
-    
-    if iso.exists() {
-        try iso.remove()
-    }
-    
-    try await fetch(
-        from: guest.url,
-        saveTo: iso
-    )
-    
-    return iso
-}
-
-func verify(_ guest: VM.Guest) throws -> Bool {
-    let checksum = try guest.image.checksum(
-        binary: true
-    )
-    
-    return guest.sha256sum.matches(checksum)
-}
