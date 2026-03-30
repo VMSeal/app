@@ -59,14 +59,6 @@ extension Wizard {
                             .textFieldStyle(.squareBorder)
                             .padding(.leading)
                         }
-                        
-                        GridRow {
-                            TextField(text: $submitted.description, prompt: Text("(optional)").italic()) {
-                                Text("Description: ")
-                            }
-                            .textFieldStyle(.squareBorder)
-                            .padding(.leading)
-                        }
                     }
                     
                     
