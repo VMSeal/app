@@ -14,6 +14,7 @@
 
 
 import SwiftUI
+import Virtualization
 
 extension Dashboard {
     struct Detail {
@@ -40,7 +41,21 @@ extension Dashboard {
         var vm: some View {
             HStack {
                 if selectedVM != nil {
-                    VM.Frame(currentVM: selectedVM!)
+                    ZStack {
+                        VM.UI.Frame(currentVM: selectedVM!)
+                            .id(selectedVM!.id) // setting ID prevents a bug where old artifacts show up on shutdown VMs.
+                        
+                        if selectedVM!.state == .stopped {
+                            // TODO: Refactor this
+                            HStack {
+                                Image(systemName: "pause.circle")
+                                Spacer()
+                                    .frame(width: 10)
+                                Heading(1, "Stopped")
+                            }.font(.largeTitle)
+                        }
+
+                    }
                 } else {
                     Text("Something went wrong displaying the VM...")
                 }

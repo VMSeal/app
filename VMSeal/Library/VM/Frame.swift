@@ -17,32 +17,34 @@ import SwiftUI
 import Virtualization
 
 extension VM {
-    struct Frame: NSViewRepresentable {
-        
-        @State private var updateCount: Int = 1
-        
-        var currentVM: VM
-        
-        func makeNSView(context: Context) -> VZVirtualMachineView {
-            let view = VZVirtualMachineView()
-            view.virtualMachine = currentVM.vm
+    struct UI {
+        struct Frame: NSViewRepresentable {
             
-            view.becomeFirstResponder()
-            //view.automaticallyReconfiguresDisplay = true
+            @State private var updateCount: Int = 1
             
-            DispatchQueue.main.async {
-                unsafe view.window?.makeFirstResponder(view)
+            var currentVM: VM
+            
+            func makeNSView(context: Context) -> VZVirtualMachineView {
+                let view = VZVirtualMachineView()
+                view.virtualMachine = currentVM.vm
+                
+                view.becomeFirstResponder()
+                //view.automaticallyReconfiguresDisplay = true
+                
+                DispatchQueue.main.async {
+                    unsafe view.window?.makeFirstResponder(view)
+                }
+                
+                return view
             }
             
-            return view
-        }
-        
-        func updateNSView(_ nsView: VZVirtualMachineView, context: Context) -> Void {
-            if nsView.virtualMachine !== currentVM.vm {
-                nsView.virtualMachine = currentVM.vm
+            func updateNSView(_ nsView: VZVirtualMachineView, context: Context) -> Void {
+                if nsView.virtualMachine !== currentVM.vm {
+                    nsView.virtualMachine = currentVM.vm
+                }
             }
+            
+            typealias NSViewType = VZVirtualMachineView
         }
-        
-        typealias NSViewType = VZVirtualMachineView
     }
 }
