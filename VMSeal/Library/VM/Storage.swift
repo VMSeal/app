@@ -24,7 +24,26 @@ extension VM {
                 return []
             }
             
-            return vms
+            return vms.map { String.atob(text: $0) ?? "" } // decode the Base64-encoded filename.
+        }
+        
+        var path: Path
+        
+        var EFIVariableStore: Path {
+            Path(path, "EFIVariableStore")
+        }
+        
+        var Disk: Path {
+            Path(path, "Disk")
+        }
+        
+        var Configuration: Path {
+            Path(path, "Configuration.json")
+        }
+        
+        init(vm name: String) {
+            // The VMs are stored in base64 format, so the path used is encoded.
+            self.path = Path(.Places.vms, name.btoa())
         }
         
         func backup(backup: VM.Storage.Backup) throws -> Void {
@@ -56,18 +75,10 @@ extension VM {
             }
         }
         
-        var path: Path
-        
-        var EFIVariableStore: Path {
-            Path(path, "EFIVariableStore")
-        }
-        
-        var Disk: Path {
-            Path(path, "Disk")
-        }
-        
-        var Configuration: Path {
-            Path(path, "Configuration.json")
+        func rename(to newName: String) throws -> Void {
+            try self.path.move(
+                to: Path(.Places.vms, newName.btoa())
+            )
         }
     }
 }

@@ -60,11 +60,10 @@ class VM: Identifiable {
         from name: String,
         devices: [Device.Configurable]?
     ) throws {
-        let path = Path(.Places.vms, name)
-        self.path = path
-        
-        let storage = VM.Storage(path: path)
+        let storage = VM.Storage(vm: name)
         self.storage = storage
+        
+        self.path = storage.path
         
         let specs: VM.Storage.Backup = try JSON.decode(
             at: storage.Configuration
@@ -107,10 +106,9 @@ class VM: Identifiable {
         
         self.guest = guest
         
-        let path = Path(.Places.vms, name)
-        self.path = path
+        let storage = VM.Storage(vm: name)
+        self.path = storage.path
         
-        let storage = VM.Storage(path: path)
         try storage.create()
         
         self.storage = storage
@@ -184,9 +182,7 @@ class VM: Identifiable {
         self.name = newName
         self.backup()
         
-        try self.storage.path.move(
-            to: Path(.Places.vms, newName)
-        )
+        try self.storage.rename(to: newName)
     }
 }
 
