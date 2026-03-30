@@ -14,8 +14,35 @@
 
 import Foundation
 
-func fetch(from sourceURL: URL, saveTo storageLocation: Path) async throws -> Void {
-    let (tmp, _) = try await URLSession.shared.download(from: sourceURL)
+final class FetchDelegate: NSObject, URLSessionTaskDelegate {
+    
+    var observation: NSKeyValueObservation? = nil
+    
+    let didProgress: (Progress) -> Void
+    
+    init(_ didProgress: @escaping (Progress) -> Void) {
+        self.didProgress = didProgress
+    }
+    
+    func urlSession(_ session: URLSession, didCreateTask task: URLSessionTask) -> Void {
+        observation = task.progress.observe(\.fractionCompleted) { progress, _ in
+            self.didProgress(progress)
+        }
+    }
+}
+
+func fetch(
+    from sourceURL: URL,
+    saveTo storageLocation: Path,
+    didProgress: @escaping (Progress) -> Void
+) async throws -> Void {
+    
+    let delegate = FetchDelegate(didProgress)
+    
+    let (tmp, _) = try await URLSession.shared.download(
+        from: sourceURL,
+        delegate: delegate
+    )
     
     do {
         try FileManager.default.moveItem(
