@@ -62,6 +62,10 @@ extension VM {
             self.active = true
             self.progress = -1
             
+            defer {
+                self.active = false
+            }
+            
             let os = specs.os
             
             let downloaded: Path = os.image
@@ -103,8 +107,6 @@ extension VM {
             try vm.configure()
             
             supervisor.add(vm)
-            
-            self.active = false
         }
     }
 }
