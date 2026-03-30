@@ -87,15 +87,14 @@ extension Wizard {
                     
                     Slider(
                         value: $submitted.specs.memory,
-                        in:
-                            VM.Requirements.Memory.minimum...VM.Requirements.Memory.maximum,
-                        step: 0.75.GiB
+                        in: VM.Requirements.Memory.minimum...VM.Requirements.Memory.maximum,
+                        step: VM.Requirements.Memory.maximum / 32
                     ) {
                         Text("Memory: ")
                         Text(
                             ByteUnit.HumanReadable.from(
                                 submitted.specs.memory,
-                                in: .MiB
+                                in: .GiB
                             )
                         )
                     }.padding(.leading)
@@ -103,7 +102,7 @@ extension Wizard {
                     Slider(
                         value: $submitted.specs.diskSize,
                         in: 10.GiB...128.GiB,
-                        step: 6.GiB
+                        step: 12.GiB
                     ) {
                         Text("Disk Size: ")
                         Text(
