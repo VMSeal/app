@@ -15,22 +15,40 @@
 import SwiftUI
 import Virtualization
 
-private struct VMStopped: View {
-    var body: some View {
-        HStack {
-            Image(systemName: "pause.circle")
-            
-            Spacer()
-                .frame(width: 10)
-            
-            Text("Stopped")
-                .bold()
+private struct Overlay {
+    struct Stopped: View {
+        var body: some View {
+            HStack {
+                Image(systemName: "pause.circle")
+                
+                Spacer()
+                    .frame(width: 10)
+                
+                Text("Stopped")
+                    .bold()
+            }
+            .font(.largeTitle)
+            .foregroundStyle(.white)
         }
-        .font(.largeTitle)
-        .foregroundStyle(.white)
+    }
+    
+    struct Starting: View {
+        var body: some View {
+            VStack {
+                ProgressView()
+                
+                Spacer()
+                    .frame(height: 10)
+                
+                Text("Starting...")
+                    .bold()
+            }
+            .font(.largeTitle)
+            .foregroundStyle(.white)
+        }
     }
 }
-
+    
 extension Dashboard {
     struct Detail {
         let selectedVM: VM?
@@ -61,7 +79,11 @@ extension Dashboard {
                             .id(selectedVM!.id) // setting ID prevents a bug where old artifacts show up on shutdown VMs.
                         
                         if selectedVM!.state == .stopped {
-                            VMStopped()
+                            Overlay.Stopped()
+                        }
+                        
+                        if selectedVM!.state == .starting {
+                            Overlay.Starting()
                         }
                     }
                 } else {
