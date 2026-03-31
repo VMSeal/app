@@ -51,6 +51,7 @@ class VM: Identifiable {
             Device.Entropy(),
             
             Device.Network(),
+            Device.Audio(),
             
             Device.Disk(size: diskSize, at: storage.Disk),
             
