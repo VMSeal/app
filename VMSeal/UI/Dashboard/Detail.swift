@@ -12,9 +12,24 @@
 //  Created by Axel H. Karlsson on 2026-03-23.
 //
 
-
 import SwiftUI
 import Virtualization
+
+private struct VMStopped: View {
+    var body: some View {
+        HStack {
+            Image(systemName: "pause.circle")
+            
+            Spacer()
+                .frame(width: 10)
+            
+            Text("Stopped")
+                .bold()
+        }
+        .font(.largeTitle)
+        .foregroundStyle(.white)
+    }
+}
 
 extension Dashboard {
     struct Detail {
@@ -46,15 +61,8 @@ extension Dashboard {
                             .id(selectedVM!.id) // setting ID prevents a bug where old artifacts show up on shutdown VMs.
                         
                         if selectedVM!.state == .stopped {
-                            // TODO: Refactor this
-                            HStack {
-                                Image(systemName: "pause.circle")
-                                Spacer()
-                                    .frame(width: 10)
-                                Heading(1, "Stopped")
-                            }.font(.largeTitle)
+                            VMStopped()
                         }
-
                     }
                 } else {
                     Text("Something went wrong displaying the VM...")

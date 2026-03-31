@@ -75,6 +75,7 @@ extension VM {
             }
         }
         
+        /** Avoid calling this method directly instead of `VM.rename()`, since this method only renames its directory. */
         func rename(to newName: String) throws -> Void {
             try self.path.move(
                 to: Path(.Places.vms, newName.btoa())

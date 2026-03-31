@@ -38,8 +38,10 @@ class VM: Identifiable {
     
     let cdrom: VM.CDROM
     
+    private var stateObserver: VM.StateObserver? = nil
+    
     var state: VZVirtualMachine.State {
-        self.vm?.state ?? .stopped
+        self.stateObserver?.state ?? .stopped
     }
     
     static func getDefaultDevices(diskSize: Double, storage: VM.Storage) throws -> [Device.Configurable] {
@@ -165,17 +167,26 @@ class VM: Identifiable {
                 configuration: self.configuration
             )
             
+            self.stateObserver = VM.StateObserver(vm: self.vm!)
+            
             try await self.vm?.start()
         } catch let e {
             throw UserFacingError(
-                message: "Something went wrong starting the box!\nDetails: \(e.localizedDescription)",
+                message: "Something went wrong starting the VM!\nDetails: \(e.localizedDescription)",
                 fatal: true
             )
         }
     }
     
-    func stop() throws {
-        try self.vm?.requestStop()
+    func stop() {
+        self.vm?.stop { error in
+            guard error != nil else {
+                // TODO: Handle errors!
+                return
+            }
+            
+            self.stateObserver = nil
+        }
     }
     
     func rename(to newName: String) throws {
