@@ -50,6 +50,9 @@ class VM: Identifiable {
             Device.Platform(),
             Device.Entropy(),
             
+            Device.Network(),
+            Device.Audio(),
+            
             Device.Disk(size: diskSize, at: storage.Disk),
             
             Device.Display(width: 1920, height: 1080),
