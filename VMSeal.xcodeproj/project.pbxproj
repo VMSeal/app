@@ -10,7 +10,6 @@
 		8B0D2EF32F72E6CD00C47906 /* LICENSE in Resources */ = {isa = PBXBuildFile; fileRef = 8B0D2EF22F72E6CD00C47906 /* LICENSE */; };
 		8B3536452F3E216700751C38 /* Virtualization.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8B3536442F3E216700751C38 /* Virtualization.framework */; };
 		8B7825052F72E44000F8B47E /* .gitignore in Resources */ = {isa = PBXBuildFile; fileRef = 8B7825042F72E44000F8B47E /* .gitignore */; };
-		8BB4721D2F7D916F004A47FF /* CONTRIBUTING.md in Resources */ = {isa = PBXBuildFile; fileRef = 8BB4721C2F7D916F004A47FF /* CONTRIBUTING.md */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -140,7 +139,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				8B0D2EF32F72E6CD00C47906 /* LICENSE in Resources */,
-				8BB4721D2F7D916F004A47FF /* CONTRIBUTING.md in Resources */,
 				8B7825052F72E44000F8B47E /* .gitignore in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
