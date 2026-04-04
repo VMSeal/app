@@ -82,43 +82,31 @@ struct VMSeal: App {
                 }
         }
         .commands {
-            VMSeal.Menubar.NewVM(
-                disabled: usingModal,
-                callback: showModal
-            )
-            
-            // Yes, this obviously looks horrendous.
-            let inserted = Binding<Bool>(
-                get: {
-                    guard supervisor.currentVM != nil else {
-                        return false
-                    }
-                    
-                    return supervisor.currentVM!.cdrom.state == .inserted
-                },
-                set: { newValue in
-                    do {
-                        if newValue == true {
-                            try supervisor.currentVM?.cdrom.insert(vm: supervisor.currentVM!)
-                        } else {
-                            try supervisor.currentVM?.cdrom.eject(vm: supervisor.currentVM!)
-                        }
-                        
-                        // Reconfigure VM to make it aware the CDROM has been inserted/ejected.
-                        try supervisor.currentVM?.configure()
-                    } catch let e {
-                        print(e.localizedDescription)
-                        // TODO: Implement error handling here!
-                        return
-                    }
-                }
-            )
+            Menubar.NewVM(showModal, usingModal)
             
             CommandMenu("VM") {
-                Toggle("Use CDROM (Alpha)", isOn: inserted)
+                let toggled = Binding<Bool>(
+                    get: { supervisor.currentVM?.cdrom.state == .inserted },
+                    set: {
+                        if let vm = supervisor.currentVM {
+                            do {
+                                if $0 {
+                                    try vm.cdrom.insert(vm: vm)
+                                } else {
+                                    try vm.cdrom.eject(vm: vm)
+                                }
+                            
+                                try vm.configure()
+                            } catch let e {
+                                self.error.trigger(e.localizedDescription)
+                            }
+                        }
+                    }
+                )
+                
+                Menubar.InsertCDROM(toggled: toggled)
                     .disabled(
-                        true
-                        //supervisor.currentVM == nil || supervisor.currentVM?.state == .running
+                        supervisor.currentVM == nil || supervisor.currentVM?.state != .stopped
                     )
             }
         }

@@ -25,6 +25,7 @@ struct Dashboard: View {
     @State var selection: Set<VM.ID> = []
     @State var renaming: VM? = nil
     
+    /** When set to `.Info`, it will show the info inspector to the right *besides* the VM. */
     @State var view: DashView = .VM
     
     @State private var toolbarButtonState = Toolbar.DisabledButton(
@@ -50,10 +51,23 @@ struct Dashboard: View {
         
         supervisor.currentVM = selectedVM
         
+        let viewingInfo = Binding<Bool>(
+            get: {
+                self.view == .Info
+            },
+            set: { newValue in
+                self.view = newValue ? .Info : .VM
+            }
+        )
+        
+        
         return NavigationSplitView {
             self.list
         } detail: {
             self.detail
+                .inspector(isPresented: viewingInfo) {
+                    self.info
+                }
         }
         .navigationSplitViewColumnWidth(120)
         .navigationSplitViewStyle(.prominentDetail)
@@ -79,7 +93,7 @@ struct Dashboard: View {
                             throw NSError()
                         }
                         
-                        try vm.stop()
+                        vm.stop()
                     } catch {
                         self.error("Failed to stop the selected VM!")
                     }
@@ -105,10 +119,6 @@ extension Dashboard {
                 self.error(e.localizedDescription)
             }
         }
-    }
-    
-    func delete(vm: VM) -> Void {
-        let _ = supervisor.delete(vm)
     }
 }
 

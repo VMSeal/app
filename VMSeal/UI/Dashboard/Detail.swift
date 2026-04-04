@@ -100,9 +100,7 @@ extension Dashboard {
             selection: self.selection
         )
         
-        if self.view == .Info && self.selectedVM != nil {
-            d.info
-        } else if self.supervisor.vms.isEmpty {
+        if self.supervisor.vms.isEmpty {
             d.empty
         } else if self.selection.isEmpty {
             d.unselected

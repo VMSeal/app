@@ -9,7 +9,7 @@
 //  Network.swift
 //  VMSeal
 //
-//  Created by Developer on 2026-03-31.
+//  Created by Axel H. Karlsson on 2026-03-31.
 //
 
 import Virtualization
@@ -19,7 +19,7 @@ extension Device {
         let network: VZVirtioNetworkDeviceConfiguration
         let attachment: VZNATNetworkDeviceAttachment
         
-        func configure(configuration: VZVirtualMachineConfiguration) throws {
+        func configure(configuration: VZVirtualMachineConfiguration) throws -> Void {
             configuration.networkDevices.append(self.network)
         }
         

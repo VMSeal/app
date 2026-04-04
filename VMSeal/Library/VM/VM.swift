@@ -146,6 +146,9 @@ class VM: Identifiable {
     
     func configure() throws -> Void {
         
+        // Clear existing configuration, if any
+        self.configuration = VZVirtualMachineConfiguration()
+        
         self.configuration.memorySize = self.memory.asUInt64
         self.configuration.cpuCount = self.vCPUs.asInt
         

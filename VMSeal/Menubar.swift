@@ -12,20 +12,23 @@
 //  Created by Axel H. Karlsson on 2026-02-20.
 //
 
-
-import Foundation
 import SwiftUI
 
-extension VMSeal {
-    struct Menubar {
-        static func NewVM(disabled: Bool = false, callback: @escaping () -> Void) -> CommandGroup<some View> {
-            return CommandGroup(before: .newItem) {
-                Button("New VM...") {
-                    return callback()
-                }
+struct Menubar {
+    static func NewVM(_ action: @escaping () -> Void, _ disabled: Bool) -> CommandGroup<some View> {
+        CommandGroup(before: .newItem) {
+            Button("New VM...", action: action)
                 .disabled(disabled)
                 .keyboardShortcut("N", modifiers: [.command, .shift])
-            }
+        }
+    }
+    
+    struct InsertCDROM: View {
+        
+        @Binding var toggled: Bool
+        
+        var body: some View {
+            Toggle("Insert CDROM", isOn: $toggled)
         }
     }
 }
