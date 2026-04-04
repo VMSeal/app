@@ -19,7 +19,7 @@ extension Device {
         let network: VZVirtioNetworkDeviceConfiguration
         let attachment: VZNATNetworkDeviceAttachment
         
-        func configure(configuration: VZVirtualMachineConfiguration) throws {
+        func configure(configuration: VZVirtualMachineConfiguration) throws -> Void {
             configuration.networkDevices.append(self.network)
         }
         
