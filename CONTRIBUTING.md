@@ -21,7 +21,7 @@ Open issues for anything you're concerned about; including questions.
 Though many projects separate Q&A from issues, here they're allowed.  
 
 **IMPORTANT:** Do not open issues for security problems (unless low-impact).  
-Instead, email them to Axel Karlsson's git commit address with (this key)[https://keys.openpgp.org/vks/v1/by-fingerprint/A3CB58E056F7B68A0746EC122AF6C2AC87667D6D].
+Instead, email them to Axel Karlsson's git commit address with [this key](https://keys.openpgp.org/vks/v1/by-fingerprint/A3CB58E056F7B68A0746EC122AF6C2AC87667D6D).
 
 ### Submitting PRs
 
@@ -35,4 +35,4 @@ In other words, do not even consider submitting slop; it won't get you anywhere.
 
 ## Contact
 
-Please contact the project lead (Axel Karlsson) on (Mastodon)[https://mastodon.social/@axelkarlsson].
+Please contact the project lead (Axel Karlsson) on [Mastodon](https://mastodon.social/@axelkarlsson).
