@@ -43,9 +43,16 @@ extension Dashboard {
                     }
                     
                     Button("Delete", systemImage: "minus", role: .destructive) {
-                        let _ = supervisor.delete(vm.wrappedValue)
+                        
+                        // Maybe the user has selected more than one VM?
+                        for selectedVM in self.selectedVMs {
+                            let _ = supervisor.delete(selectedVM)
+                        }
+                        
+                        // Unselect all VMs, otherwise the dashboard thinks that
+                        // the deleted VMs are still selected.
+                        selection = []
                     }
-                    .disabled(vm.id == selectedVM?.id)
                 }
                 .popover(isPresented: isRenamingThisVM) {
                     RenamePopover { newName in
