@@ -6,7 +6,7 @@
 //  | see the LICENSE file in the project's source directory. |
 //  +---------------------------------------------------------+
 //
-//  Dashboard.swift
+//  Entropy.swift
 //  VMSeal
 //
 //  Created by Axel H. Karlsson on 2026-03-22.

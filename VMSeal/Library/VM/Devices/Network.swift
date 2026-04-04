@@ -9,7 +9,7 @@
 //  Network.swift
 //  VMSeal
 //
-//  Created by Developer on 2026-03-31.
+//  Created by Axel H. Karlsson on 2026-03-31.
 //
 
 import Virtualization
