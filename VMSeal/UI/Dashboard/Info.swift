@@ -23,44 +23,62 @@ private struct Row: View {
     var body: some View {
         GridRow {
             Text(key)
+            Spacer()
+                .frame(maxWidth: .infinity, maxHeight: 2)
             Text(value)
         }
-        .padding(3)
+        .font(.system(size: 16))
+        .padding(2)
         .gridColumnAlignment(.leading)
     }
 }
 
-extension Dashboard.Detail {
+extension Dashboard {
     var info: some View {
-        let vm = selectedVM!
-        
-        return NavigationStack {
-            VStack {
-                GroupBox("Hardware") {
+        VStack {
+            if let vm = selectedVM {
+                HStack {
+                    Heading(2, "Hardware")
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(4)
+                
+                GroupBox {
                     Grid {
                         Row(
                             key: "Disk:",
                             value: ByteUnit.HumanReadable.from(vm.diskSize, in: .GiB)
                         )
                         
-                        Row(
-                            key: "Memory:",
-                            value: ByteUnit.HumanReadable.from(vm.memory, in: .MiB)
-                        )
+                        Divider()
                         
                         Row(
-                            key: "vCPUs",
+                            key: "RAM:",
+                            value: ByteUnit.HumanReadable.from(vm.memory, in: .GiB)
+                        )
+                        
+                        Divider()
+                        
+                        Row(
+                            key: "vCPUs:",
                             value: String(Int(vm.vCPUs))
+                        )
+                        
+                        Divider()
+                        
+                        Row(
+                            key: "CDROM:",
+                            value: vm.cdrom.state == .inserted
+                                ? "Inserted"
+                                : "Ejected"
                         )
                     }
                 }
+            } else {
+                Text("No VM selected.")
             }
         }
-        .frame(
-            maxWidth: .infinity,
-            maxHeight: .infinity,
-            alignment: .top
-        )
-        .navigationTitle("Info")
+        .padding(2)
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
     }
 }

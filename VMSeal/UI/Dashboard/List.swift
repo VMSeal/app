@@ -42,8 +42,8 @@ extension Dashboard {
                         renaming = vm.wrappedValue
                     }
                     
-                    Button("Delete", systemImage: "minus", role: .destructive) {
-                        delete(vm: vm.wrappedValue)
+                    Button("Delete", systemImage: "minux", role: .destructive) {
+                        let _ = supervisor.delete(vm.wrappedValue)
                     }
                     .disabled(vm.id == selectedVM?.id)
                 }

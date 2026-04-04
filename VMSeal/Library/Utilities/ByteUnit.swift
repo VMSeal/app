@@ -34,7 +34,7 @@ struct ByteUnit {
                 value = value / 1024 / 1024 / 1024
             }
             
-            return unsafe "\(String(format: "%.1f", value)) \(unit)"
+            return "\(value.rounded().formatted(.number)) \(unit)"
         }
     }
 }

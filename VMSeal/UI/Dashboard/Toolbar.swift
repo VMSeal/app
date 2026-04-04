@@ -46,11 +46,23 @@ extension Dashboard {
         
         @ToolbarContentBuilder var toolbar: some ToolbarContent {
             ToolbarItemGroup(placement: .primaryAction) {
-                Button("Start", systemImage: "play.fill", action: start)
-                    .disabled(disabled.start == .disabled)
                 
                 Button("Stop", systemImage: "stop.fill", action: stop)
                     .disabled(disabled.stop == .disabled)
+                
+                Button("Start", systemImage: "play.fill", action: start)
+                    .disabled(disabled.start == .disabled)
+                
+                Spacer()
+                    .frame(width: 40)
+                
+                Button("Info", systemImage: "sidebar.right") {
+                    if self.view == .Info {
+                        self.view = .VM
+                    } else {
+                        self.view = .Info
+                    }
+                }
             }
             
             ToolbarItemGroup(placement: .navigation) {
@@ -58,16 +70,6 @@ extension Dashboard {
                     selection.removeAll()
                     return
                 }
-                
-                Button("Info", systemImage: "info.circle") {
-                    if view == .Info {
-                        view = .VM
-                    } else {
-                        view = .Info
-                    }
-                    
-                    return
-                }.disabled(disabled.info == .disabled)
             }
         }
     }
