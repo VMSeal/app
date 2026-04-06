@@ -112,8 +112,10 @@ struct Path {
         try FileManager.default.removeItem(at: self.url)
     }
     
-    func move(to destination: Path) throws -> Void {
+    mutating func move(to destination: Path) throws -> Void {
         try FileManager.default.moveItem(at: self.url, to: destination.url)
+        
+        self.url = destination.url
     }
     
     func checksum(binary: Bool = false) throws -> SHA256Sum {
@@ -181,7 +183,7 @@ struct Path {
     // --- NON-STATIC ---
     // ------------------
     
-    let url: URL
+    var url: URL
     
     var stringified: String {
         self.url.path()
