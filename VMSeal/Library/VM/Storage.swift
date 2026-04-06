@@ -15,7 +15,7 @@
 import Foundation
 
 extension VM {
-    struct Storage {
+    class Storage {
         /** Computed property returning all VMs stored as an array of VM names (i.e. filenames) */
         static var all: [String] {
             guard let vms = try? FileManager.default.contentsOfDirectory(

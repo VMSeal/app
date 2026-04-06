@@ -14,6 +14,7 @@
 
 import Foundation
 import SwiftUI
+import Virtualization
 
 extension Dashboard {
     var list: some View {
@@ -40,7 +41,7 @@ extension Dashboard {
                 .contextMenu {
                     Button("Rename") {
                         renaming = vm.wrappedValue
-                    }
+                    }.disabled(vm.wrappedValue.state != .stopped)
                     
                     Button("Delete", systemImage: "minus", role: .destructive) {
                         

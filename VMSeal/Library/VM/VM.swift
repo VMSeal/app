@@ -26,8 +26,7 @@ class VM: Identifiable {
     
     var diskSize: Double
     
-    let path: Path
-    let storage: VM.Storage
+    var storage: VM.Storage
     var devices: [Device.Configurable]
     
     let guest: VM.Guest
@@ -42,6 +41,10 @@ class VM: Identifiable {
     
     var state: VZVirtualMachine.State {
         self.stateObserver?.state ?? .stopped
+    }
+    
+    var path: Path {
+        storage.path
     }
     
     static func getDefaultDevices(diskSize: Double, storage: VM.Storage) throws -> [Device.Configurable] {
@@ -67,8 +70,6 @@ class VM: Identifiable {
     ) throws {
         let storage = VM.Storage(vm: name)
         self.storage = storage
-        
-        self.path = storage.path
         
         let specs: VM.Storage.Backup = try JSON.decode(
             at: storage.Configuration
@@ -112,8 +113,6 @@ class VM: Identifiable {
         self.guest = guest
         
         let storage = VM.Storage(vm: name)
-        self.path = storage.path
-        
         try storage.create()
         
         self.storage = storage
@@ -175,7 +174,7 @@ class VM: Identifiable {
             
             self.stateObserver = VM.StateObserver(vm: self.vm!)
             
-            try await self.vm?.start()
+            try await self.vm!.start()
         } catch let e {
             throw UserFacingError(
                 message: "Something went wrong starting the VM!\nDetails: \(e.localizedDescription)",
@@ -196,10 +195,25 @@ class VM: Identifiable {
     }
     
     func rename(to newName: String) throws {
+        if self.state != .stopped {
+            throw VM.RuntimeError("Cannot rename VM which is currently running!")
+        }
+        
         self.name = newName
-        self.backup()
         
         try self.storage.rename(to: newName)
+        
+        // We need to reconfigure the VM's hard disk and EFI store & more
+        // for the VM to be fully up-to-date with its new path.
+        
+        self.devices = try Self.getDefaultDevices(
+            diskSize: self.diskSize,
+            storage: storage
+        )
+        
+        try self.configure()
+        
+        self.backup()
     }
 }
 
