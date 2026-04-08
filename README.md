@@ -6,4 +6,4 @@
 
 VMSeal is a FOSS virtualiser for macOS, based on Apple's `Virtualization.Framework`, intended primarily for creating secured and isolated environments.
 
-**IMPORTANT:** The software is currently in very, very, early stages of development; **it does not** work properly right now!
+**NOTE:** The software is currently in alpha. 
