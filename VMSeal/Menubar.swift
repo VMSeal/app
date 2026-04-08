@@ -15,12 +15,10 @@
 import SwiftUI
 
 struct Menubar {
-    static func NewVM(_ action: @escaping () -> Void, _ disabled: Bool) -> CommandGroup<some View> {
-        CommandGroup(before: .newItem) {
-            Button("New VM...", action: action)
-                .disabled(disabled)
-                .keyboardShortcut("N", modifiers: [.command, .shift])
-        }
+    static func NewVM(action: @escaping () -> Void, disabled: Bool) -> some View {
+        Button("New VM...", action: action)
+            .disabled(disabled)
+            .keyboardShortcut("N", modifiers: [.command, .shift])
     }
     
     struct InsertCDROM: View {

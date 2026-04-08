@@ -62,7 +62,7 @@ extension Dashboard {
                 }
         }
         .contextMenu {
-            Button("New...", systemImage: "plus", action: showModal)
+            Button("New...", systemImage: "plus", action: addNewVM)
         }
     }
 }

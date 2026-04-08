@@ -20,7 +20,7 @@ struct Dashboard: View {
     @Binding var supervisor: Supervisor
     
     let error: @Sendable (String?) -> Void
-    let showModal: () -> Void
+    let addNewVM: () -> Void
     
     @State var selection: Set<VM.ID> = []
     @State var renaming: VM? = nil
