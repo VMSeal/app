@@ -257,5 +257,24 @@ extension VM {
             
             self.state = .ejected
         }
+        
+        /**
+         * High-level function for toggling the CDROM presence.  
+         * **NOTE:** This function reconfigures the VM provided and requires it to be shutdown.
+         */
+        func toggle(vm: VM) throws -> Void {
+            
+            if vm.state != .stopped {
+                throw VM.RuntimeError("To insert/eject a VM, it needs to be powered off completely.")
+            }
+            
+            if self.state == .ejected {
+                try vm.cdrom.insert(vm: vm)
+            } else {
+                try vm.cdrom.eject(vm: vm)
+            }
+            
+            try vm.configure()
+        }
     }
 }

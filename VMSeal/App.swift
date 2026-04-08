@@ -21,82 +21,71 @@ import AppKit
 @main
 struct VMSeal: App {
     @State private var supervisor: Supervisor = Supervisor()
-    
-    // True if *any* modal is currently in use.
-    @State private var usingModal = false
-    @State private var error = VMSeal.Error()
-    
     @State private var installer: VM.Installer = VM.Installer()
     
+    @State private var error = VMSeal.Error()
+    @State private var newVM = Modal()
+    
     init() {
-        self.supervisor.restore()
+        // Restores saved VMs from disk
+        supervisor.restore()
     }
     
     var body: some Scene {
         WindowGroup {
             Dashboard(
                 supervisor: $supervisor,
-                error: self.error.trigger,
-                showModal: self.showModal,
+                error: error.trigger,
+                addNewVM: newVM.show,
             )
-                .sheet(isPresented: $usingModal) {
-                    Wizard.NewVM(didCancel: hideModal) { name, description, specs in
-                        hideModal()
-                        
-                        Task {
-                            do {
-                                hideModal()
-                                try await self.installer.install(
-                                    name: name,
-                                    specs: specs,
-                                    supervisor: supervisor
-                                )
-                            } catch let e {
-                                self.error.trigger(e.localizedDescription)
-                            }
-                        }
-                    }
-                }
-                .sheet(isPresented: $installer.active) {
-                    VStack {
-                        if installer.progress >= 0 {
-                            ProgressView(value: installer.progress)
-                            Text(installer.status?.rawValue ?? "Working on it...")
-                        } else {
-                            ProgressView()
-                            Text("Please be patient, this may take a while...")
-                        }
-                    }
-                    .padding(10)
+            .sheet(isPresented: $newVM.displayed) {
+                Wizard.NewVM(didCancel: newVM.hide) { name, description, specs in
+                    newVM.hide()
                     
-                    
-                }
-                .alert(error.message, isPresented: $error.occurred) {
-                    Button("OK") {
-                        error.occurred.toggle()
-                        
-                        if error.crash {
-                            VMSeal.quit()
+                    Task {
+                        do {
+                            try await self.installer.install(
+                                name: name,
+                                specs: specs,
+                                supervisor: supervisor
+                            )
+                        } catch let e {
+                            self.error.trigger(e.localizedDescription)
                         }
                     }
                 }
+            }
+            .sheet(isPresented: $installer.active) {
+                InstallProgress(
+                    progress: $installer.progress,
+                    status: $installer.status
+                )
+            }
+            .alert(error.message, isPresented: $error.occurred) {
+                Button("OK") {
+                    error.occurred.toggle()
+                    
+                    if error.crash {
+                        VMSeal.quit()
+                    }
+                }
+            }
         }
         .commands {
-            Menubar.NewVM(showModal, usingModal)
+            CommandGroup(before: .newItem) {
+                Menubar.NewVM(
+                    action: newVM.show,
+                    disabled: newVM.displayed
+                )
+            }
             
             CommandMenu("VM") {
                 let toggled = Binding<Bool>(
                     get: { supervisor.currentVM?.cdrom.state == .inserted },
-                    set: {
+                    set: { _ in
                         if let vm = supervisor.currentVM {
                             do {
-                                if $0 {
-                                    try vm.cdrom.insert(vm: vm)
-                                } else {
-                                    try vm.cdrom.eject(vm: vm)
-                                }
-                            
-                                try vm.configure()
+                                try vm.cdrom.toggle(vm: vm)
                             } catch let e {
                                 self.error.trigger(e.localizedDescription)
                             }
@@ -114,18 +103,6 @@ struct VMSeal: App {
         Settings {
             self.settings
         }
-    }
-    
-    func showModal() -> Void {
-        self.usingModal = true
-    }
-    
-    func hideModal() -> Void {
-        self.usingModal = false
-    }
-    
-    static var architecture: SystemArchitecture {
-        return getArchitecture()
     }
     
     static func quit() -> Void {

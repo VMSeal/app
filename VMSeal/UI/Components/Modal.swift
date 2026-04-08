@@ -6,18 +6,24 @@
 //  | see the LICENSE file in the project's source directory. |
 //  +---------------------------------------------------------+
 //
-//  RuntimeError.swift
+//  Modal.swift
 //  VMSeal
 //
-//  Created by Axel H. Karlsson on 2026-04-06.
+//  Created by Axel H. Karlsson on 2026-04-08.
 //
 
-extension VM {
-    struct RuntimeError: Error {
-        let localizedError: String
-        
-        init(_ message: String) {
-            self.localizedError = message
-        }
+import SwiftUI
+
+/** Describes the state of a sheet (modal). */
+@Observable
+class Modal {
+    var displayed: Bool = false
+    
+    func show() {
+        displayed = true
+    }
+    
+    func hide() {
+        displayed = false
     }
 }
