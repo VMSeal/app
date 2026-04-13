@@ -12,12 +12,14 @@
 //  Created by Axel H. Karlsson on 2026-04-06.
 //
 
+import Foundation
+
 extension VM {
-    struct RuntimeError: Error {
-        let localizedError: String
+    struct RuntimeError: LocalizedError {
+        var errorDescription: String
         
         init(_ message: String) {
-            self.localizedError = message
+            self.errorDescription = message
         }
     }
 }
