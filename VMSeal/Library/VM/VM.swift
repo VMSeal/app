@@ -100,7 +100,7 @@ class VM: Identifiable {
     
     init(
         name: String,
-        specs: VM.Configuration,
+        specs: VM.Specification,
         guest: VM.Guest,
         devices: [Device.Configurable]?
     ) throws {
