@@ -9,104 +9,154 @@
 //  Installer.swift
 //  VMSeal
 //
-//  Created by Developer on 2026-03-26.
+//  Created by Axel H. Karlsson on 2026-03-26.
 //
 
 import SwiftUI
 
+struct InstallationError: LocalizedError {
+    var errorDescription: String
+    
+    init(_ errorDescription: String) {
+        self.errorDescription = errorDescription
+    }
+}
+
 extension VM {
     @Observable
+    @MainActor
     class Installer {
         
         enum Status: String {
-            case DOWNLOADING_IMAGE = "Downloading ISO image..."
-            case VERIFYING_IMAGE = "Verifying checksum..."
-            case CONFIGURING_VM = "Configuring new VM..."
+            case downloading = "Downloading ISO image..."
+            case verifying = "Verifying checksum..."
+            case configuring = "Configuring new VM..."
         }
         
         var active: Bool = false
         var status: Status? = nil
         var progress: Double = -1
         
-        private func download(_ guest: VM.Guest) async throws -> Path {
-            let iso = guest.image
+        /** The source the installer will install */
+        var source: Source? = nil
+        var supervisor: Supervisor? = nil
+        
+        private func download(to destination: Path) async throws -> Void {
+            self.status = .downloading
             
-            if iso.exists() {
-                try iso.remove()
+            if destination.exists() {
+                try destination.remove()
+            }
+            
+            guard let url = source?.url else {
+                throw InstallationError("Couldn't retrieve URL of source!")
             }
             
             try await fetch(
-                from: guest.url,
-                saveTo: iso,
+                from: url,
+                saveTo: destination,
                 didProgress: { progress in
                     self.progress = progress.fractionCompleted
                 }
             )
-            
-            return iso
         }
 
-        private func verify(_ guest: VM.Guest) async throws -> Bool {
-            let checksum = try guest.image.checksum(
-                binary: true
-            )
+        private func verify(at downloaded: Path?) async throws -> Void {
+            self.status = .verifying
             
-            return guest.sha256sum.matches(checksum)
+            guard let cdrom = downloaded else {
+                throw InstallationError("Can't verify CDROM before it's downloaded.")
+            }
+            
+            let task = Task {
+                try cdrom.checksum(binary: true)
+            }
+            
+            let checksum = try await task.value
+            
+            guard let expected = source?.checksum else {
+                throw InstallationError("No expected checksum found!")
+            }
+            
+            if !expected.matches(checksum) {
+                throw InstallationError("Failed to verify the integrity of the downloaded ISO!")
+            }
         }
         
-        func install(
-            name: String,
-            specs: VM.Configuration,
-            supervisor: Supervisor,
-        ) async throws -> Void {
-            self.active = true
-            self.progress = -1
-            
-            defer {
-                self.active = false
+        private func configure(_ name: String, _ image: Path, _ specs: VM.Specification) async throws -> Void {
+            func cleanup(_ vm: VM) {
+                vm.storage.erase()
             }
             
-            let os = specs.os
-            
-            let downloaded: Path = os.image
-            
-            // Only downloads if needed.
-            if !downloaded.exists() {
-                self.status = .DOWNLOADING_IMAGE
-                let _ = try await download(os)
-            }
-            
-            self.status = .VERIFYING_IMAGE
-            
-            // TODO: Make this async
-            let verified = try await self.verify(os)
-            
-            if !verified {
-                throw UserFacingError(
-                    message: 
-                        "VMSeal failed to verify the ISO downloaded was legitimate!\nConsider opening an issue if the error persists."
-                )
-            }
-            
-            self.status = .CONFIGURING_VM
+            self.status = .configuring
             
             let vm = try VM(
                 name: name,
                 specs: specs,
-                guest: os,
+                guest: VM.Guest(
+                    name: name,
+                    image: image
+                ),
                 devices: nil
             )
             
-            let disk = vm.devices.first { $0 is Device.Disk } as? Device.Disk
-            
-            if disk == nil {
-                throw UserFacingError(message: "Disk not found inside VM's internal devices!")
+            guard let disk = vm.devices.first(where: { $0 is Device.Disk }) as? Device.Disk else {
+                cleanup(vm)
+                throw InstallationError("Disk not found inside VM's internal devices!")
             }
             
-            try disk!.truncate()
-            try vm.configure()
+            let task = Task {
+                try disk.truncate()
+            }
+            
+            guard await (try? task.result.get()) != nil else {
+                cleanup(vm)
+                throw InstallationError("Disk creation failed!")
+            }
+            
+            do {
+                try vm.configure()
+            } catch {
+                cleanup(vm)
+            }
+            
+            guard let supervisor = self.supervisor else {
+                cleanup(vm)
+                throw InstallationError("Supervisor needs to be initialised prior to use!")
+            }
             
             supervisor.add(vm)
+        }
+        
+        /**
+         * Begins the full installation from square one.
+         */
+        func install(name: String, specs: VM.Specification) async throws -> Void {
+            active = true
+            progress = -1
+            source = specs.source
+            
+            let destination = Path(.Places.isos, "\(specs.source.name).iso")
+            
+            defer {
+                active = false
+                progress = -1
+                status = nil
+                source = nil
+            }
+            
+            // Only downloads if needed.
+            if !destination.exists() {
+                try await download(to: destination)
+            }
+            
+            try await self.verify(at: destination)
+            
+            try await self.configure(
+                name,
+                destination,
+                specs
+            )
         }
     }
 }

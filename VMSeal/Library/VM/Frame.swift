@@ -19,9 +19,6 @@ import Virtualization
 extension VM {
     struct UI {
         struct Frame: NSViewRepresentable {
-            
-            @State private var updateCount: Int = 1
-            
             var currentVM: VM
             
             func makeNSView(context: Context) -> VZVirtualMachineView {

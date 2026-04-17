@@ -31,6 +31,10 @@ struct VMSeal: App {
     init() {
         // Restores saved VMs from disk
         supervisor.restore()
+        
+        // We have to set this property in the initialiser,
+        // otherwise Swift gets angry.
+        installer.supervisor = supervisor
     }
     
     var body: some Scene {
@@ -46,13 +50,14 @@ struct VMSeal: App {
                     
                     Task {
                         do {
-                            try await self.installer.install(
+                            try await installer.install(
                                 name: name,
-                                specs: specs,
-                                supervisor: supervisor
+                                specs: specs
                             )
                         } catch let e as LocalizedError {
                             reportError(e.errorDescription)
+                        } catch let e {
+                            reportError(e.localizedDescription)
                         }
                     }
                 }
@@ -81,14 +86,16 @@ struct VMSeal: App {
                 let toggled = Binding<Bool>(
                     get: { supervisor.currentVM?.cdrom.state == .inserted },
                     set: { _ in
-                        if let vm = supervisor.currentVM {
-                            do {
-                                try vm.cdrom.toggle(vm: vm)
-                            } catch let e as LocalizedError {
-                                reportError(e.errorDescription)
-                            } catch let e {
-                                reportError(e.localizedDescription)
-                            }
+                        guard let vm = supervisor.currentVM else {
+                            return
+                        }
+                        
+                        do {
+                            try vm.cdrom.toggle(vm: vm)
+                        } catch let e as LocalizedError {
+                            reportError(e.errorDescription)
+                        } catch let e {
+                            reportError(e.localizedDescription)
                         }
                     }
                 )
@@ -101,7 +108,7 @@ struct VMSeal: App {
         }
     
         Settings {
-            self.settings
+            settings
         }
     }
     
@@ -110,7 +117,7 @@ struct VMSeal: App {
     }
     
     func reportError(_ message: String?) -> Void {
-        self.hadError = true
         self.errorMessage = message ?? "Something went wrong!"
+        self.hadError = true
     }
 }
