@@ -20,7 +20,7 @@ extension Wizard {
             var name: String = ""
             var description: String = ""
             
-            var specs = VM.Configuration.standard
+            var specs = VM.Specification.standard
         }
         
         @State private var submitted = Submitted()
@@ -39,7 +39,7 @@ extension Wizard {
         }
         
         var didCancel: () -> Void
-        var didSubmit: (_ name: String, _ description: String?, _ specs: VM.Configuration) -> Void
+        var didSubmit: (_ name: String, _ description: String?, _ specs: VM.Specification) -> Void
         
         var body: some View {
             VStack {
@@ -66,9 +66,9 @@ extension Wizard {
                     
                     Grid {
                         GridRow {
-                            Picker("Guest OS: ", selection: $submitted.specs.os) {
-                                ForEach(Guests) { guest in
-                                    Text(guest.name).tag(guest)
+                            Picker("OS: ", selection: $submitted.specs.source) {
+                                ForEach(Source.all) { source in
+                                    Text(source.name).tag(source)
                                 }
                             }
                             .padding(.leading)

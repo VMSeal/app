@@ -54,7 +54,7 @@ struct PathNotExists: LocalizedError {
     }
 }
 
-struct Path {
+struct Path: Hashable, Codable {
     static func read(path: Path, encoding: String.Encoding = .utf8) throws -> String {
         guard let rv = try? String(contentsOf: path.url, encoding: encoding) else {
             throw PathReadError(filename: path.stringified)

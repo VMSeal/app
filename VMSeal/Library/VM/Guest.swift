@@ -20,44 +20,9 @@ extension VM {
         static func == (lhs: Self, rhs: Self) -> Bool {
             lhs.id == rhs.id
         }
-        
-        // ------------------------------------------------------
-        
+                
         let name: String
-        
-        private let urls: [Architecture.Chip : String]
-        private let sha256sums: [Architecture.Chip : SHA256Sum]
-        
-        init(name: String, urls: [Architecture.Chip : String], sha256sums: [Architecture.Chip : SHA256Sum]) {
-            self.name = name
-            
-            self.urls = urls
-            self.sha256sums = sha256sums
-        }
-        
-        // Getter which returns the appropriate download URL
-        // for the end user's architecture.
-        var url: URL {
-            // If the URL is nil, we have bigger issues.
-            // It must surely be better to die quickly than
-            // let runtime bugs linger around...
-            URL(
-                string: self.urls[Architecture.host]!
-            )!
-        }
-        
-        // Getter which returns the appropriate checksum of
-        // the downloaded ISO for the end user's architecture.
-        var sha256sum: SHA256Sum {
-            self.sha256sums[Architecture.host]!
-        }
-        
-        var image: Path {
-            Path(
-                Path.Places.isos,
-                "\(self.name).iso"
-            )
-        }
+        let image: Path
         
         var id: String {
             self.name

@@ -23,19 +23,25 @@ struct VMSeal: App {
     @State private var supervisor: Supervisor = Supervisor()
     @State private var installer: VM.Installer = VM.Installer()
     
-    @State private var error = VMSeal.Error()
+    @State private var hadError: Bool = false
+    @State private var errorMessage: String = ""
+    
     @State private var newVM = Modal()
     
     init() {
         // Restores saved VMs from disk
         supervisor.restore()
+        
+        // We have to set this property in the initialiser,
+        // otherwise Swift gets angry.
+        installer.supervisor = supervisor
     }
     
     var body: some Scene {
         WindowGroup {
             Dashboard(
                 supervisor: $supervisor,
-                error: error.trigger,
+                error: reportError,
                 addNewVM: newVM.show,
             )
             .sheet(isPresented: $newVM.displayed) {
@@ -44,13 +50,14 @@ struct VMSeal: App {
                     
                     Task {
                         do {
-                            try await self.installer.install(
+                            try await installer.install(
                                 name: name,
-                                specs: specs,
-                                supervisor: supervisor
+                                specs: specs
                             )
+                        } catch let e as LocalizedError {
+                            reportError(e.errorDescription)
                         } catch let e {
-                            self.error.trigger(e.localizedDescription)
+                            reportError(e.localizedDescription)
                         }
                     }
                 }
@@ -61,13 +68,9 @@ struct VMSeal: App {
                     status: $installer.status
                 )
             }
-            .alert(error.message, isPresented: $error.occurred) {
+            .alert(errorMessage, isPresented: $hadError) {
                 Button("OK") {
-                    error.occurred.toggle()
-                    
-                    if error.crash {
-                        VMSeal.quit()
-                    }
+                    hadError = false
                 }
             }
         }
@@ -83,12 +86,16 @@ struct VMSeal: App {
                 let toggled = Binding<Bool>(
                     get: { supervisor.currentVM?.cdrom.state == .inserted },
                     set: { _ in
-                        if let vm = supervisor.currentVM {
-                            do {
-                                try vm.cdrom.toggle(vm: vm)
-                            } catch let e {
-                                self.error.trigger(e.localizedDescription)
-                            }
+                        guard let vm = supervisor.currentVM else {
+                            return
+                        }
+                        
+                        do {
+                            try vm.cdrom.toggle(vm: vm)
+                        } catch let e as LocalizedError {
+                            reportError(e.errorDescription)
+                        } catch let e {
+                            reportError(e.localizedDescription)
                         }
                     }
                 )
@@ -101,30 +108,16 @@ struct VMSeal: App {
         }
     
         Settings {
-            self.settings
+            settings
         }
     }
     
     static func quit() -> Void {
         NSApplication.shared.terminate(self)
     }
-}
-
-extension VMSeal {
-    class Error {
-        var occurred: Bool = false
-        var message: String = "Something went wrong!"
-        var crash: Bool = false
-        
-        /** Displays a user-facing error */
-        func trigger(_ message: String?) -> Void {
-            self.occurred = true
-            
-            if message != nil {
-                self.message = message!
-            }
-        }
+    
+    func reportError(_ message: String?) -> Void {
+        self.errorMessage = message ?? "Something went wrong!"
+        self.hadError = true
     }
 }
-
-

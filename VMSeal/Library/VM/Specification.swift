@@ -17,13 +17,13 @@ import Foundation
 import Virtualization
 
 extension VM {
-    struct Configuration: Codable {
+    struct Specification: Codable {
         var memory: Double
         var diskSize: Double
         
         var vCPUs: Double
         
-        var os: VM.Guest
+        var source: Source
         
         // Determines if the guest
         // can connect to the internet.
@@ -31,12 +31,12 @@ extension VM {
         
         // Default configuration which should
         // be fine for most.
-        static var standard: Configuration {
-            Configuration(
+        static var standard: Specification {
+            Specification(
                 memory: VM.Requirements.Memory.recommended,
                 diskSize: 16.GiB,
                 vCPUs: 2,
-                os: Guests.first!,
+                source: Source.all.first!,
                 airgapped: false
             )
         }
