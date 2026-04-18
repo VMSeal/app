@@ -18,15 +18,46 @@ import Virtualization
 
 extension VM {
     struct UI {
+        private class VMView: VZVirtualMachineView {
+            var vm: VM?
+            
+            override func setFrameSize(_ newSize: NSSize) {
+                super.setFrameSize(newSize)
+                
+                guard newSize.width > 0 && newSize.height > 0 else {
+                    return
+                }
+                
+                if let display = vm?.display {
+                    
+                    // Size must've changed since last resize!
+                    if newSize.width == display.sizeInPixels.width
+                        && newSize.height == display.sizeInPixels.height
+                    {
+                        return
+                    }
+                    
+                    try? display.reconfigure(
+                        configuration: VZVirtioGraphicsScanoutConfiguration(
+                            widthInPixels: Int(newSize.width),
+                            heightInPixels: Int(newSize.height)
+                        )
+                    )
+                }
+            }
+        }
+        
         struct Frame: NSViewRepresentable {
             var currentVM: VM
             
             func makeNSView(context: Context) -> VZVirtualMachineView {
-                let view = VZVirtualMachineView()
+                let view = VMView()
+                view.vm = currentVM
+                
                 view.virtualMachine = currentVM.vm
                 
                 view.becomeFirstResponder()
-                //view.automaticallyReconfiguresDisplay = true
+                view.automaticallyReconfiguresDisplay = false
                 
                 DispatchQueue.main.async {
                     unsafe view.window?.makeFirstResponder(view)

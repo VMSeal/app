@@ -32,8 +32,33 @@ class VM: Identifiable {
     let guest: VM.Guest
     
     var vm: VZVirtualMachine?
-    
     var configuration: VZVirtualMachineConfiguration
+    
+    var display: VZGraphicsDisplay? {
+        get {
+            guard let vm = vm else {
+                return nil
+            }
+            
+            // Too lazy to check for multiple displays,
+            // and, to be honest, will likely never get implemented.
+            
+            guard vm.graphicsDevices.count == 1 else {
+                fatalError("Currently, only one graphics device is supported.")
+            }
+            
+            guard vm.graphicsDevices.first!.displays.count == 1 else {
+                fatalError("Currently, only one display device is supported.")
+            }
+            
+            guard let display = vm.graphicsDevices.first!.displays.first else {
+                return nil
+            }
+            
+            
+            return display
+        }
+    }
     
     let cdrom: VM.CDROM
     
