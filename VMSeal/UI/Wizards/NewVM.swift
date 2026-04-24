@@ -81,8 +81,8 @@ extension Wizard {
                     
                     Slider(
                         value: $submitted.specs.diskSize,
-                        in: 10.GiB...128.GiB,
-                        step: 12.GiB
+                        in: VM.Requirements.DiskSize.minimum...VM.Requirements.DiskSize.maximum,
+                        step: VM.Requirements.DiskSize.maximum / 16
                     ) {
                         Text("Disk Size: ")
                         Text(

@@ -32,10 +32,18 @@ extension VM {
         // Default configuration which should
         // be fine for most.
         static var standard: Specification {
-            Specification(
+            
+            guard let recommendedCPUs = Double(exactly: VM.Requirements.CPU.recommended) else {
+                fatalError(
+                    "Failed to convert CPU count from Int to Double.\n"
+                    + "Please file an issue at the project's issue tracker if this error occurred!"
+                )
+            }
+            
+            return Specification(
                 memory: VM.Requirements.Memory.recommended,
-                diskSize: 16.GiB,
-                vCPUs: 2,
+                diskSize: VM.Requirements.DiskSize.recommended,
+                vCPUs: recommendedCPUs,
                 source: Source.all.first!,
                 airgapped: false
             )
