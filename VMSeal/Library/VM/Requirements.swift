@@ -83,5 +83,29 @@ extension VM {
                 return goal
             }
         }
+        
+        struct DiskSize: Requirement {
+            static var minimum: Double {
+                8.GiB
+            }
+            
+            static var maximum: Double {
+                min(DiskSpace.free, 128.GiB)
+            }
+            
+            static var recommended: Double {
+                let goal = 16.GiB
+                
+                if goal < DiskSize.minimum {
+                    return DiskSize.minimum
+                }
+                
+                if goal > DiskSize.maximum {
+                    return DiskSize.maximum
+                }
+                
+                return goal
+            }
+        }
     }
 }
