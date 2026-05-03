@@ -18,15 +18,27 @@ import SwiftUI
 import Virtualization
 import AppKit
 
+@Observable
+@MainActor
+class ModalManager {
+    var NewVM: Modal
+    
+    init(NewVM: Modal) {
+        self.NewVM = NewVM
+    }
+}
+
 @main
 struct VMSeal: App {
-    @State private var supervisor: Supervisor = Supervisor()
+    @State var supervisor: Supervisor = Supervisor()
     @State private var installer: VM.Installer = VM.Installer()
     
     @State private var hadError: Bool = false
     @State private var errorMessage: String = ""
     
-    @State private var newVM = Modal()
+    @State var modal = ModalManager(
+        NewVM: Modal()
+    )
     
     init() {
         // Restores saved VMs from disk
@@ -42,11 +54,11 @@ struct VMSeal: App {
             Dashboard(
                 supervisor: $supervisor,
                 error: reportError,
-                addNewVM: newVM.show,
+                addNewVM: modal.NewVM.show,
             )
-            .sheet(isPresented: $newVM.displayed) {
-                Wizard.NewVM(didCancel: newVM.hide) { name, description, specs in
-                    newVM.hide()
+            .sheet(isPresented: $modal.NewVM.displayed) {
+                Wizard.NewVM(didCancel: modal.NewVM.hide) { name, description, specs in
+                    modal.NewVM.hide()
                     
                     Task {
                         do {
@@ -75,36 +87,7 @@ struct VMSeal: App {
             }
         }
         .commands {
-            CommandGroup(before: .newItem) {
-                Menubar.NewVM(
-                    action: newVM.show,
-                    disabled: newVM.displayed
-                )
-            }
-            
-            CommandMenu("VM") {
-                let toggled = Binding<Bool>(
-                    get: { supervisor.currentVM?.cdrom.state == .inserted },
-                    set: { _ in
-                        guard let vm = supervisor.currentVM else {
-                            return
-                        }
-                        
-                        do {
-                            try vm.cdrom.toggle(vm: vm)
-                        } catch let e as LocalizedError {
-                            reportError(e.errorDescription)
-                        } catch let e {
-                            reportError(e.localizedDescription)
-                        }
-                    }
-                )
-                
-                Menubar.InsertCDROM(toggled: toggled)
-                    .disabled(
-                        supervisor.currentVM == nil || supervisor.currentVM?.state != .stopped
-                    )
-            }
+            menubar
         }
     
         Settings {

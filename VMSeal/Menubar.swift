@@ -13,20 +13,38 @@
 //
 
 import SwiftUI
+import Virtualization
 
-struct Menubar {
-    static func NewVM(action: @escaping () -> Void, disabled: Bool) -> some View {
-        Button("New VM...", action: action)
-            .disabled(disabled)
-            .keyboardShortcut("N", modifiers: [.command, .shift])
-    }
-    
-    struct InsertCDROM: View {
+extension VMSeal {
+    @CommandsBuilder var menubar: some Commands {
+        CommandGroup(before: .newItem) {
+            Button("New VM...", action: modal.NewVM.show)
+                .disabled(modal.NewVM.displayed)
+                .keyboardShortcut("N", modifiers: [.command, .shift])
+        }
         
-        @Binding var toggled: Bool
-        
-        var body: some View {
-            Toggle("Insert CDROM", isOn: $toggled)
+        CommandMenu("VM") {
+            let toggled = Binding<Bool>(
+                get: { supervisor.currentVM?.cdrom.state == .inserted },
+                set: { _ in
+                    guard let vm = supervisor.currentVM else {
+                        return
+                    }
+                    
+                    do {
+                        try vm.cdrom.toggle(vm: vm)
+                    } catch let e as LocalizedError {
+                        reportError(e.errorDescription)
+                    } catch let e {
+                        reportError(e.localizedDescription)
+                    }
+                }
+            )
+            
+            Toggle("Insert CDROM", isOn: toggled)
+                .disabled(
+                    supervisor.currentVM == nil || supervisor.currentVM?.state != .stopped
+                )
         }
     }
 }
