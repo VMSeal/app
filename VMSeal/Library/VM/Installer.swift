@@ -27,6 +27,27 @@ extension VM {
     @MainActor
     class Installer {
         
+        private struct CheckResult {
+            var reason: String?
+            var passed: Bool
+        }
+        
+        /** An array of closures which checks if a VM can be created */
+        private let checks: [(String, VM.Specification) -> CheckResult] = [
+            { name, _ in
+                // Does the VM contain any duplicates? If so, return `true`, else `false`.
+                let anyDuplicates = VM.Storage.all.contains { $0 == name }
+                
+                var result = CheckResult(passed: !anyDuplicates)
+                
+                if anyDuplicates {
+                    result.reason = "A VM with the same name was found!"
+                }
+                
+                return result
+            }
+        ]
+        
         enum Status: String {
             case downloading = "Downloading ISO image..."
             case verifying = "Verifying checksum..."
@@ -132,6 +153,21 @@ extension VM {
          * Begins the full installation from square one.
          */
         func install(name: String, specs: VM.Specification) async throws -> Void {
+            
+            // Just some basic checks to see if a VM
+            // can be created without issues.
+            for check in checks {
+                let result = check(name, specs)
+                
+                if !result.passed {
+                    guard let reason = result.reason else {
+                        throw InstallationError("Failed to start VM creation!")
+                    }
+                    
+                    throw InstallationError(reason)
+                }
+            }
+            
             active = true
             progress = -1
             source = specs.source
