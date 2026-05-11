@@ -130,7 +130,7 @@ extension VM {
             do {
                 try vm.configure()
             } catch {
-                cleanup(vm)
+                return cleanup(vm)
             }
             
             guard let supervisor = self.supervisor else {
