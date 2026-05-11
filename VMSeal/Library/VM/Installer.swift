@@ -88,11 +88,11 @@ extension VM {
             let checksum = try await task.value
             
             guard let expected = source?.checksum else {
-                throw InstallerVerificationError.unexpectedInternalChecksum
+                throw VM.InstallerVerificationError.unexpectedInternalChecksum
             }
             
             if !expected.matches(checksum) {
-                throw InstallerVerificationError.failedVerificationCheck
+                throw VM.InstallerVerificationError.failedVerificationCheck
             }
         }
         
@@ -115,7 +115,7 @@ extension VM {
             
             guard let disk = vm.devices.first(where: { $0 is Device.Disk }) as? Device.Disk else {
                 cleanup(vm)
-                throw InstallerConfigurationError.diskNotFoundInVMsInternalDevices
+                throw VM.InstallerConfigurationError.diskNotFoundInVMsInternalDevices
             }
             
             let task = Task {
@@ -124,7 +124,7 @@ extension VM {
             
             guard await (try? task.result.get()) != nil else {
                 cleanup(vm)
-                throw InstallerConfigurationError.diskCreationFailed
+                throw VM.InstallerConfigurationError.diskCreationFailed
             }
             
             do {
@@ -135,7 +135,7 @@ extension VM {
             
             guard let supervisor = self.supervisor else {
                 cleanup(vm)
-                throw InstallerConfigurationError.supervisorUninitialised
+                throw VM.InstallerConfigurationError.supervisorUninitialised
             }
             
             supervisor.add(vm)
@@ -159,7 +159,7 @@ extension VM {
                         )
                     }
                     
-                    throw InstallerConfigurationCheckError.failed(reason: reason)
+                    throw VM.InstallerConfigurationCheckError.failed(reason: reason)
                 }
             }
             
